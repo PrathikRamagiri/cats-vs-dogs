@@ -1,0 +1,30 @@
+//Dataset can be find in the below link:
+https://drive.usercontent.google.com/download?id=12WhCCpKTWpeBztLegcoYx2gMo2KbaxDG&authuser=0
+
+//Installation Instructions
+
+- Use Google Colab for the lab (recommended, as it provides free GPU).
+- In Colab, set the runtime to use a free T4 GPU.
+- Download the dataset using the provided link in the notebook.
+- Unzip/extract the dataset files.
+- All necessary Python packages are pre-installed in Colab.
+
+//Documentation
+
+- The lab is about classifying images of dogs and cats using a Convolutional Neural Network (CNN).
+- The dataset is split into training and validation sets.
+- Images are organized into separate folders for dogs and cats.
+- Data generators are used to load and preprocess the images.
+- A basic CNN model is built for binary classification.
+- The model is trained for 10 epochs.
+- Training and validation accuracy and loss are tracked during training.
+- Results are visualized using accuracy and loss plots.
+
+//Usage Guidelines (Simple Points)
+
+- Follow the notebook cells in order from top to bottom.
+- Make sure the dataset is fully downloaded and extracted before proceeding.
+- Check that the data directories are correctly organized (dogs and cats in separate folders for both training and validation).
+- Observe the training progress and validation results after each epoch.
+- Use the provided plots to evaluate model performance.
+- If you want to improve results, you can experiment with regularization or data augmentation as suggested in the lab.
