@@ -1,0 +1,349 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{caption}
+\usepackage{float}
+\usepackage[margin=1in]{geometry}
+
+\definecolor{codegray}{gray}{0.95}
+\lstset{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\footnotesize,
+    frame=single,
+    breaklines=true,
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
+}
+
+\title{Lab Report: Regularization Techniques in
+Image Classification}
+\author{ Prathik Ramagiri \\
+Student ID: 12500515 \\
+Course: AI for Smart Sensors and Actuators \\
+Instructor: Prof. Tobias Schaffer}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+This lab examines how regularization and data augmentation can improve convolutional neural networks (CNNs) for binary image classification using the Dogs vs. Cats dataset. A baseline model is first trained to establish reference metrics. Regularization methods such as Dropout and L2 weight decay are then applied to reduce overfitting. EarlyStopping is used to stop training when validation loss stops improving. Data augumentaion techniques, such as rotation, flipping, and zooming, enhance training diversity. Model performance is evaluated using accuracy, loss curves, and confusion matrices.
+
+\section{Methodology}
+
+The Dogs vs. Cats dataset was pre-processed with normalization and data augmentation. Models were trained using binary cross-entropy loss for 10 epochs with EarlyStopping. The evaluation used accuracy, loss curves, and confusion matrices, implemented in TensorFlow/Keras on Google Colab with GPU.
+
+
+\subsection{Software and Hardware Used}
+\begin{itemize}
+    \item \textbf{Programming Language:} Python 3.10
+    \item \textbf{Libraries:} TensorFlow, Keras, Matplotlib, Scikit-learn, NumPy
+    \item \textbf{Hardware:} Intel Core i5 CPU, 8GB RAM
+\end{itemize}
+
+\subsection{Code Repository}
+The full source code is hosted on GitHub:
+\url{https://colab.research.google.com/drive/1KAJm2VzTh2WONVxxcw6VrmRhQ7yerrA2}
+
+
+
+\textbf This repository includes:
+
+ \begin{itemize}
+  \item Source code files
+  \item Installation Instructions
+  \item Dataset
+  \item Documentation and usage guidelines.
+\end{itemize}
+
+
+\subsection{Code Implementation}
+Below are some crucial code implementations: 
+
+\vspace{0.5cm}
+
+
+\textbf{2.3.1  Baseline CNN Model}
+
+\vspace{0.2cm}
+
+
+
+\begin{lstlisting}[language=Python]
+model = models.Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(150,150,3)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(128, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Flatten(),
+    layers.Dense(128, activation='relu'),
+    layers.Dense(1, activation='sigmoid')
+])
+\end{lstlisting}
+
+\vspace{1cm}
+
+
+
+\textbf{2.3.2  Dropout Regularization}
+
+\vspace{0.2cm}
+
+
+\begin{lstlisting}[language=Python]
+model_dropout = models.Sequential([
+    layers.Input(shape=(150, 150, 3)),
+    layers.Conv2D(32, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Dropout(0.3),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Dropout(0.3),
+    layers.Conv2D(128, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Dropout(0.3),
+    layers.Flatten(),
+    layers.Dense(128, activation='relu'),
+    layers.Dropout(0.5),
+    layers.Dense(1, activation='sigmoid')
+])
+
+\end{lstlisting}
+
+\vspace{2cm}
+
+\textbf{2.3.3  L2 Regularization}
+
+\vspace{0.2cm}
+
+\begin{lstlisting}[language=Python]
+model_l2 = models.Sequential([
+    layers.Input(shape=(150, 150, 3)),
+    layers.Conv2D(32, (3, 3), activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(128, (3, 3), activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Flatten(),
+    layers.Dense(128, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+    layers.Dense(1, activation='sigmoid')
+])
+\end{lstlisting}
+
+\textbf{2.3.4  Combined Dropout and L2}
+
+\begin{lstlisting}[language=Python]
+model_combo1 = models.Sequential([
+    layers.Input(shape=(150, 150, 3)),
+    layers.Conv2D(32, (3, 3), activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Dropout(0.3),
+    layers.Conv2D(64, (3, 3), activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Dropout(0.3),
+    layers.Conv2D(128, (3, 3), activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Dropout(0.3),
+    layers.Flatten(),
+    layers.Dense(128, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+    layers.Dropout(0.5),
+    layers.Dense(1, activation='sigmoid')
+])
+\end{lstlisting}
+
+\textbf{2.3.5 Data Augmentation}
+
+\vspace{0.2cm}
+
+\begin{lstlisting}[language=Python]
+train_augmented = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True
+)
+\end{lstlisting}
+
+\vspace{0.8cm}
+\textbf{2.3.6 EarlyStopping}
+
+\begin{lstlisting}[language=Python]
+early_stop = EarlyStopping(monitor='val_loss', patience=3)
+history_basic = model_basic.fit(
+train_generator,
+epochs=10,
+validation_data=val_generator,
+callbacks=[early_stop]
+)
+\end{lstlisting}
+\section{Results}
+The following results show training progress for different regularization approaches:
+\subsection*{Accuracy and Loss Graphs}
+Performance of various models across epochs is shown below.
+
+\paragraph{Baseline Model Accuracy and Loss:}
+The baseline model shows a steady improvement in training accuracy with a corresponding decrease in loss.
+
+
+\begin{figure}[H]
+\centering
+    \includegraphics[width=0.9\linewidth]{1.png}
+    \caption{ Baseline Model Accuracy}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\centering
+    \includegraphics[width=0.8\linewidth]{2.png}
+    \caption{Model Loss of Baseline Model}
+    \label{fig:enter-label}
+\end{figure}
+
+\paragraph{Baseline Model Accuracy and Loss}
+The baseline model shows a steady improvement in training accuracy with a corresponding decrease in loss. However, validation accuracy plateaus earlier, indicating potential overfitting beginning after around 10 epochs.
+
+
+\centering
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{3.png}
+\caption{Mode Accuracy of Dropout Regularization Model}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{4.png}
+    \caption{Mode Loss of Dropout Regularization Model}
+    \label{fig:enter-label}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{5.png}
+    \caption{Model Accuracy of L2 Regularization Model}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{6.png}
+    \caption{Model Loss of L2 Regularization Model}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{7.png}
+    \caption{Model Accuracy of Combined Dropout and L2 Model}
+    \label{fig:enter-label}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{8.png}
+    \caption{Model Accuracy of Combined Dropout and L2 Model}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{9.png}
+    \caption{Model Accuracy with Early Stopping}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{10.png}
+\caption{Model Loss with Early Stopping}
+\label{fig:enter-label}
+\end{figure}
+\label{fig:enter-label}
+\end{figure}
+
+
+
+\subsection*{Confusion Matrix (Table Format)}
+
+\noindent
+\textbf{Note:} \\
+\textbf{TN (True Negative):} Correctly predicted cats \\
+\textbf{FP (False Positive):} Cats incorrectly predicted as dogs \\
+\textbf{FN (False Negative):} Dogs incorrectly predicted as cats \\
+\textbf{TP (True Positive):} Correctly predicted dogs
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Actual / Predicted} & \textbf{Cat (0)} & \textbf{Dog (1)} \\
+\hline
+\textbf{Cat (0)} & 1272 (TN) & 1239 (FP) \\
+\hline
+\textbf{Dog (1)} & 1217 (FN) & 1272 (TP) \\
+\hline
+\end{tabular}
+\caption{Confusion Matrix showing model performance on validation data}
+\end{table}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\linewidth]{11.png}
+    \caption{Confusion Matrix}
+    \label{fig:enter-label}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{12.png}
+    \caption{Misclassified Images with Prediction}
+    \label{fig:enter-label}
+\end{figure}
+
+\section{Challenges, Limitations, and Error Analysis}
+\subsection{Challenges Faced}
+\begin{itemize}
+   \item Choosing appropriate dropout and L2 regularization values was difficult.
+    \item Slow training due to lack of powerful GPU.
+    \item Organizing the dataset and understanding augmentation parameters.
+    \item Properly combining Dropout with L2 without underfitting.
+\end{itemize}
+
+\subsection{Error Analysis}
+\begin{itemize}
+    \item Forgetting to normalize image data.
+    \item Data imbalance issues.
+    \item Higher loss despite increasing accuracy due to overfitting tendencies.
+\item Augmentation helped generalization but sometimes slowed training.
+\end{itemize}
+
+\subsection{Limitations}
+\begin{itemize}
+    \item Model is sensitive to background noise and poorly centered subjects.
+    \item Basic CNNs have limited accuracy without transfer learning.
+    \item Requires a large dataset and significant computational power.
+    \item Sensitive to minor image changes like noise or slight rotation.    
+    \item No use of transfer learning which could further improve generalization.
+\end{itemize}
+
+\section{Discussion}
+Both L2 and Dropout regularization improved generalization, though their combination may have been overly strong, limiting performance. EarlyStopping effectively reduced training time without sacrificing accuracy. Data augmentation had the most significant impact, greatly enhancing robustness and making it the most effective setup overall. The CNN performed well on typical images but struggled with edge cases. Misclassified examples highlighted the need for a more diverse and balanced dataset. Overall, the results aligned with expectations and underscored the importance of proper tuning and data preparation in machine learning.
+
+\section{Conclusion}
+This lab confirmed the importance of regularization in improving CNN generalization, with data augmentation producing the best overall performance. CNNs effectively classified cats and dogs when trained with well-prepared data. Dropout and L2 regularization reduced overfitting, while augmentation improved robustness. However, the model struggled with atypical or ambiguous images. Future work could focus on using more diverse data, applying transfer learning, and improving the interpretability of the model.
+
+
+\section{References}
+\begin{itemize}
+    \item Chollet, F. (2018). Deep Learning with Python. Manning Publications.
+    \item TensorFlow documentation: \url{https://www.tensorflow.org}
+    \item \url{https://www.tensorflow.org/tutorials/images/cnn}
+    \item TensorFlow Docs: \url{https://www.tensorflow.org/}
+    \item Kaggle Dogs vs Cats dataset: \url{https://www.kaggle.com/c/dogs-vs-cats}
+\end{itemize}
+
+\end{document}
